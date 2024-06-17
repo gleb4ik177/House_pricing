@@ -10,6 +10,7 @@ import optuna
 import mlflow
 import mlflow.sklearn
 from mlflow.models import infer_signature
+from sklearn.compose import ColumnTransformer
 
 def get_or_create_experiment(experiment_name:str):
     """
@@ -35,21 +36,21 @@ def get_or_create_experiment(experiment_name:str):
     else:
         return mlflow.create_experiment(experiment_name)
 
-def plot_feature_importance(importance, names, model_type:str):
+def plot_feature_importance(importance:np.ndarray, names:pd.core.indexes.base.Index, model_type:str):
     """
-    Создает гистограмму важности фичей для модели catboost
+    Создает линейчатую диаграмму важности фичей для модели catboost
     Parameters:
     ----------
-        importance : list of float
+        importance : np.ndarray
             Значения важности фичей, полученные методом get_feature_importance()
-        names : list of str
+        names : pd.core.indexes.base.Index
             Названия фичей
         model_type : str
             Название использованной модели для озаглавливания графика
 
     Returns:
     -------
-        Figure
+        matplotlib.figure.Figure
             Рисунок гистограммы важности фичей
     """
     feature_importance = np.array(importance)
@@ -87,7 +88,7 @@ def catboost_training(model:CatBoostRegressor, X_train:pd.DataFrame, X_test:pd.D
         y_test : pd.DataFrame
             Датафрейм с тестовыми лейблами
         run_name : str
-            Название рана
+            Название рана в эксперименте
     """
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
@@ -120,7 +121,7 @@ def catboost_training(model:CatBoostRegressor, X_train:pd.DataFrame, X_test:pd.D
         )
 
 
-def catboost_optuna_training(X_train:pd.DataFrame, X_test:pd.DataFrame, y_train:pd.DataFrame, y_test:pd.DataFrame, categorical_columns, trials:int):
+def catboost_optuna_training(X_train:pd.DataFrame, X_test:pd.DataFrame, y_train:pd.DataFrame, y_test:pd.DataFrame, categorical_columns:pd.core.indexes.base.Index, trials:int):
     """
     Тюнит параметры catboost с помощью optuna, беря за функцию потерь rmsle. Логирует каждую итерацию в MLflow.
     Parameters:
@@ -133,10 +134,10 @@ def catboost_optuna_training(X_train:pd.DataFrame, X_test:pd.DataFrame, y_train:
             Датафрейм с тренировочными лейблами
         y_test : pd.DataFrame
             Датафрейм с тестовыми лейблами
-        categorical_columns : list of str
+        categorical_columns : pd.core.indexes.base.Index
             Массив названий категориальных фичей
         trials : int
-            количество итераций
+            количество итераций optuna
     Returns:
     -------
         CatBoostRegressor
@@ -253,12 +254,12 @@ def ridge_training(model: Ridge, X_train:pd.DataFrame, X_test:pd.DataFrame, y_tr
         )
 
 
-def ridge_optuna_training(preprocessing, X_train:pd.DataFrame, X_test:pd.DataFrame, y_train:pd.DataFrame, y_test:pd.DataFrame, trials:int):
+def ridge_optuna_training(preprocessing:ColumnTransformer, X_train:pd.DataFrame, X_test:pd.DataFrame, y_train:pd.DataFrame, y_test:pd.DataFrame, trials:int):
     """
     Тюнит параметры ridge с помощью optuna, беря за функцию потерь rmsle. Логирует каждую итерацию в MLflow.
     Parameters:
     ----------
-        preprocessing: Pipeline
+        preprocessing: ColumnTransformer
             Пайплайн для препроцессинга данных
         X_train : pd.DataFrame
             Датафрейм с тренировочными фичами
@@ -269,7 +270,7 @@ def ridge_optuna_training(preprocessing, X_train:pd.DataFrame, X_test:pd.DataFra
         y_test : pd.DataFrame
             Датафрейм с тестовыми лейблами
         trials : int
-            количество итераций
+            количество итераций optuna
     Returns:
     -------
         Ridge

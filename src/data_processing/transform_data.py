@@ -10,5 +10,5 @@ def transform(df:pd.DataFrame):
             Returns
             -------
             pd.DataFrame
-                Трансформированные датафрейм """
+                Трансформированный датафрейм """
     return df.drop(['Id', 'PoolQC', 'MiscFeature', 'Alley', 'Fence', 'MasVnrType', 'FireplaceQu', 'LotFrontage'], axis=1)

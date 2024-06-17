@@ -15,6 +15,19 @@ s3 = session.client(
     "s3", endpoint_url=ENDPOINT)
 
 class S3Loader():
+    """
+    Класс для работы с S3
+
+    Attributes
+    ----------
+    bucket : str
+        Название бакета
+
+    Methods
+    -------
+    get()
+        Возвращает необходимый файл из S3 хранилища в байтах
+    """
     def __init__(self,bucket):
       self.bucket = bucket
 
